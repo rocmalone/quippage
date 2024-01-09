@@ -50,19 +50,65 @@ const posts = [
   },
 ];
 
+// Generally - store refresh tokens in DB or Redis cache
+let refreshTokens = [];
+
 app.get("/posts", authenticateToken, (req, res) => {
-  res.json(posts.filter((post) => post.username === req["user"]["name"]));
+  log("Client requested posts by user '" + req.user.name + "'");
+  res.json(posts.filter((post) => post.username === req.user.name));
 });
 
+//
+//
+// *** AUTHENTICATION
+//
+//
+//
+
+// Create new accessToken & refreshToken
 app.post("/api/login", (req, res) => {
   // Authenticate User
 
   const username = req.body.username;
+  log("Authenticating user '" + username + "'");
   const user = { name: username };
 
   const accessToken = generateAccessToken(user);
   const refreshToken = jwt.sign(user, REFRESH_TOKEN_SECRET);
+  // Add refresh token to data store
+  refreshTokens.push(refreshToken);
   res.json({ accessToken: accessToken, refreshToken: refreshToken });
+  log("Successfully authenticated '" + username + "'");
+});
+
+// Create a new access token given a valid refresh token
+app.post("/api/token", (req, res) => {
+  const refreshToken = req.body.refreshToken;
+  log("3");
+  //   log("Refresh Tokens = " + refreshTokens);
+  if (refreshToken == null) return res.sendStatus(401);
+  if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403);
+  log("2");
+  jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, user) => {
+    log("1");
+    if (err) {
+      error("Refresh token error: ", err);
+      return res.sendStatus(403);
+    }
+    log("Creating new access token for '" + user.name + "'");
+    const accessToken = generateAccessToken({ name: user.name });
+    res.status(200).json({ accessToken: accessToken });
+  });
+});
+
+// Delete a refresh token
+// req = { refreshToken: refreshToken }
+app.delete("/api/logout", (req, res) => {
+  refreshTokens = refreshTokens.filter(
+    (token) => token !== req.body.refreshToken
+  );
+  // Consider - if client sends an access token too, then we should delete that
+  res.sendStatus(204);
 });
 
 function authenticateToken(req, res, next) {
@@ -74,13 +120,15 @@ function authenticateToken(req, res, next) {
 
   jwt.verify(token, ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) return res.status(403).send(err);
-    req["user"] = user;
+    req.user = user;
     next();
   });
 }
+
 // https://www.youtube.com/watch?v=mbsmsi7l3r4&list=PLZlA0Gpn_vH9yI1hwDVzWqu5sAfajcsBQ&index=3
 function generateAccessToken(user) {
-  return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "60s" });
+  log("Generating ACCESS_TOKEN for '" + user.name + "'");
+  return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "20s" });
 }
 
 app.listen(PORT, () => {
