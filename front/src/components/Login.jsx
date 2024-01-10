@@ -1,11 +1,12 @@
 import { ChangeEvent, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import styles from "./Login.module.css";
+import { apiUrl } from "../App";
 
 import axios from "axios";
 import Cookies from "js-cookie";
 
 const Login = () => {
-  const apiUrl = "http://localhost:3000";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorText, setErrorText] = useState("");
@@ -19,7 +20,7 @@ const Login = () => {
     setPassword(e.target.value);
   };
 
-  const handleLogin = async () => {
+  const clickLogin = async () => {
     setErrorText(""); // Clear login errors
     const req = {
       username: username,
@@ -36,10 +37,14 @@ const Login = () => {
     }
   };
 
+  const clickSignup = async () => {
+    navigate("/login/new");
+  };
+
   return (
     <>
       <div className="center">
-        <form>
+        <form className={styles.form}>
           <label htmlFor="usernameInput">Username</label>
           <input
             type="text"
@@ -52,10 +57,15 @@ const Login = () => {
             id="passwordInput"
             onChange={handlePasswordChange}
           ></input>
-          <button type="button" onClick={handleLogin}>
+          <button type="button" onClick={clickLogin}>
             Login
           </button>
         </form>
+        <div>Reset Password</div>
+        <div>Don't have an account?</div>
+        <button type="button" onClick={clickSignup}>
+          Sign Up
+        </button>
       </div>
     </>
   );
