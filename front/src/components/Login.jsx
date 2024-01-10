@@ -1,26 +1,39 @@
 import { ChangeEvent, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { ApiContext } from "../types";
 
 import axios from "axios";
+import Cookies from "js-cookie";
 
-const Home: React.FC = () => {
+const Login = () => {
+  const apiUrl = "http://localhost:3000";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorText, setErrorText] = useState("");
+  const navigate = useNavigate();
 
-  const { apiUrl } = useContext(ApiContext);
-
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUsernameChange = (e) => {
     setUsername(e.target.value);
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (e) => {
     setPassword(e.target.value);
   };
 
-  const handleLogin = () => {
-    console.log(username, password, apiUrl);
-    axios.post("");
+  const handleLogin = async () => {
+    setErrorText(""); // Clear login errors
+    const req = {
+      username: username,
+      password: password,
+    };
+    const res = await axios.post(apiUrl + "/api/login", req);
+    if (res.status === 200 && res.data.accessToken && res.data.refreshToken) {
+      Cookies.set("accessToken", res.data.accessToken);
+      Cookies.set("refreshToken", res.data.refreshToken);
+      navigate("/");
+    } else if (res.status === 401) {
+      setErrorText("Invalid username or password.");
+      return;
+    }
   };
 
   return (
@@ -48,4 +61,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default Login;

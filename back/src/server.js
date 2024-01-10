@@ -67,7 +67,10 @@ app.get("/posts", authenticateToken, (req, res) => {
 
 // Create new accessToken & refreshToken
 app.post("/api/login", (req, res) => {
+  // Validate: bad request
+  if (!req.body.username || !req.body.password) return res.sendStatus(400);
   // Authenticate User
+  // if user auth failed: return res.sendStatus(401)
 
   const username = req.body.username;
   log("Authenticating user '" + username + "'");

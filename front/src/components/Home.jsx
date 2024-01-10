@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
-const Home: React.FC = () => {
+const Home = () => {
   const [pageState, setPageState] = useState("LANDING");
 
   const [errorText, setErrorText] = useState("test");
@@ -13,11 +14,11 @@ const Home: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const handleRoomCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRoomCodeChange = (e) => {
     const newRoomCode = e.target.value;
 
     // Validate no numbers
-    const regex: RegExp = /\d/; // Return true if numbers exists
+    const regex = /\d/; // Return true if numbers exists
     if (regex.test(newRoomCode)) {
       // Don't let the number enter the input
       e.target.value = roomCode;
@@ -34,29 +35,44 @@ const Home: React.FC = () => {
     setRoomCode(newRoomCode);
   };
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNameChange = (e) => {
     const newName = e.target.value;
     setName(newName);
   };
 
-  const clickJoinRoom = (e: Event) => {};
+  const clickJoinButton = (e) => {};
 
-  const clickCreateRoom = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const clickCreateRoomButton = async (e) => {
     if (!isLoggedIn()) {
     }
   };
 
-  const isLoggedIn = (): boolean => {
-    return false;
+  const clickLoginButton = () => {
+    navigate("/login");
   };
+
+  const clickProfileButton = () => {
+    navigate("/profile");
+  };
+
+  const isLoggedIn = () => {};
 
   const requestGuestUser = async () => {
     //
   };
 
+  console.log("accessToken:", Cookies.get("accessToken"));
+  console.log("refreshToken:", Cookies.get("refreshToken"));
+
   return (
     <>
       <div className="center">
+        <button type="button" onClick={clickLoginButton}>
+          Login
+        </button>
+        <button type="button" onClick={clickProfileButton}>
+          Profile
+        </button>
         <div className="form-group">
           <label htmlFor="inputName">Name</label>
           <input
@@ -75,14 +91,19 @@ const Home: React.FC = () => {
             onChange={handleRoomCodeChange}
           ></input>
         </div>
-        <button type="submit" id="joinRoomButton" className="btn btn-primary">
+        <button
+          type="submit"
+          id="joinRoomButton"
+          className="btn btn-primary"
+          onClick={clickJoinButton}
+        >
           Join
         </button>
         <button
           type="submit"
           id="createRoomButton"
           className="btn btn-primary"
-          onClick={clickCreateRoom}
+          onClick={clickCreateRoomButton}
         >
           Create Room
         </button>
