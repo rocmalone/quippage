@@ -77,8 +77,9 @@ app.post("/api/login", (req, res) => {
 app.post("/api/register", async (req, res) => {
   // req.body:
   // { username, email, password }
+  log("Request to create user: ", JSON.stringify(req.body));
   try {
-    const hashedPassword = bcrypt.hash(req.body.password, 10);
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
     // Store hashedPassword in DB
     users.push({
       id: Date.now().toString(),
@@ -86,10 +87,11 @@ app.post("/api/register", async (req, res) => {
       email: req.body.email,
       password: hashedPassword,
     });
-    res.redirect("/login");
+    res.sendStatus(200);
   } catch {
-    res.redirect("/login/create");
+    res.sendStatus(500);
   }
+  log(JSON.stringify(users));
 });
 
 //

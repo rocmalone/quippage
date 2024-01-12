@@ -5,7 +5,7 @@ exports.warn = function (...args) {
 
 exports.log = function (...args) {
   const message = args.join(" ");
-  console.warn("[LOG]", message);
+  console.log("[LOG]", message);
 };
 
 exports.error = function (...args) {

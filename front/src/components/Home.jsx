@@ -125,7 +125,7 @@ const Home = () => {
           onClick={clickJoinButton}
         >
           {isJoinButtonLoading ? (
-            <div class="spinner-border text-light" role="status"></div>
+            <div className="spinner-border text-light" role="status"></div>
           ) : (
             <span>Join Room</span>
           )}
