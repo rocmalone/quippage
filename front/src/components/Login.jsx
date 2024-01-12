@@ -55,6 +55,7 @@ const Login = () => {
   return (
     <>
       <div className="center">
+        <h2>Login</h2>
         <div className="form-floating">
           <input
             type="text"
@@ -101,7 +102,7 @@ const Login = () => {
         >
           Sign Up
         </button>
-        <div style={{ marginTop: "16px" }}>
+        <div style={{ marginTop: "50px" }}>
           <span>or </span>
           <a
             href="/login/reset"

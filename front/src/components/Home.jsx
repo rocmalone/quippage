@@ -65,14 +65,13 @@ const Home = () => {
             My Account
           </a>
         ) : (
-          <a href="/login" className="">
-            Login
-          </a>
+          <></>
         )}
       </div>
       <div className="center">
+        <h2>Play Quippage</h2>
         <div className="form-group">
-          <label htmlFor="inputName">Name</label>
+          <label htmlFor="inputName">Nickname</label>
           <input
             type="text"
             className="form-control"
@@ -105,7 +104,25 @@ const Home = () => {
         >
           Create Room
         </button>
-        <p>{errorText}</p>
+        <p className="error" style={{ marginTop: "6px" }}>
+          {errorText}
+        </p>
+        <div className={styles.loginContainer}>
+          {isLoggedIn ? (
+            <a href="/profile" className="">
+              My Account
+            </a>
+          ) : (
+            <>
+              <div>Want to make your own lists?</div>
+              <a href="/login" className="">
+                Login
+              </a>
+              <span> or </span>
+              <a href="/login/new">Sign Up</a>
+            </>
+          )}
+        </div>
       </div>
     </>
   );

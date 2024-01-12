@@ -12,7 +12,11 @@ export const apiUrl = "http://localhost:3000";
 
 const App = () => (
   <>
-    <div className="header">quippage.xyz</div>
+    <div className="header">
+      <a className="title" href="/">
+        quippage.xyz
+      </a>
+    </div>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />

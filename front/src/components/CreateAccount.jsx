@@ -39,12 +39,14 @@ const CreateAccount = () => {
   return (
     <>
       <div className="center">
+        <h2>Create Account</h2>
         <div className="form-floating">
           <input
             type="text"
             className="form-control"
             placeholder="Username"
             id="usernameInput"
+            autoComplete="off"
           ></input>
           <label htmlFor="usernameInput">Username</label>
         </div>

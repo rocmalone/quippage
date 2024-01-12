@@ -1,5 +1,4 @@
 .loginContainer {
-  position: absolute;
-  top: 45px;
-  right: 15px;
+  display: inline;
+  text-align: center;
 }
