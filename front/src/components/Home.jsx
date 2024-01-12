@@ -2,8 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
+import styles from "./Home.module.css";
+
 const Home = () => {
   const [pageState, setPageState] = useState("LANDING");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [errorText, setErrorText] = useState("test");
 
@@ -47,16 +50,6 @@ const Home = () => {
     }
   };
 
-  const clickLoginButton = () => {
-    navigate("/login");
-  };
-
-  const clickProfileButton = () => {
-    navigate("/profile");
-  };
-
-  const isLoggedIn = () => {};
-
   const requestGuestUser = async () => {
     //
   };
@@ -66,13 +59,18 @@ const Home = () => {
 
   return (
     <>
+      <div className={styles.loginContainer}>
+        {isLoggedIn ? (
+          <a href="/profile" className="">
+            My Account
+          </a>
+        ) : (
+          <a href="/login" className="">
+            Login
+          </a>
+        )}
+      </div>
       <div className="center">
-        <button type="button" onClick={clickLoginButton}>
-          Login
-        </button>
-        <button type="button" onClick={clickProfileButton}>
-          Profile
-        </button>
         <div className="form-group">
           <label htmlFor="inputName">Name</label>
           <input
