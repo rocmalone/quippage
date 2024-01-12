@@ -3,6 +3,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const { log, warn, error, readEnvVar } = require("./helpers.js");
 
 dotenv.config();
@@ -34,11 +35,6 @@ async function run() {
 }
 run().catch(console.dir);
 
-app.post("/api/user/login", authenticateToken, (req, res) => {
-  console.log("recieved data: ", req.body);
-  res.status(200).send("ok");
-});
-
 const posts = [
   {
     username: "Kyle",
@@ -50,20 +46,14 @@ const posts = [
   },
 ];
 
-// Generally - store refresh tokens in DB or Redis cache
-let refreshTokens = [];
+//
+//
+// *** AUTHORIZATION
+//
+//
+//
 
-app.get("/posts", authenticateToken, (req, res) => {
-  log("Client requested posts by user '" + req.user.name + "'");
-  res.json(posts.filter((post) => post.username === req.user.name));
-});
-
-//
-//
-// *** AUTHENTICATION
-//
-//
-//
+const users = [];
 
 // Create new accessToken & refreshToken
 app.post("/api/login", (req, res) => {
@@ -82,6 +72,39 @@ app.post("/api/login", (req, res) => {
   refreshTokens.push(refreshToken);
   res.json({ accessToken: accessToken, refreshToken: refreshToken });
   log("Successfully authenticated '" + username + "'");
+});
+
+app.post("/api/register", async (req, res) => {
+  // req.body:
+  // { username, email, password }
+  try {
+    const hashedPassword = bcrypt.hash(req.body.password, 10);
+    // Store hashedPassword in DB
+    users.push({
+      id: Date.now().toString(),
+      username: req.body.username,
+      email: req.body.email,
+      password: hashedPassword,
+    });
+    res.redirect("/login");
+  } catch {
+    res.redirect("/login/create");
+  }
+});
+
+//
+//
+// *** AUTHENTICATION
+//
+//
+//
+
+// Generally - store refresh tokens in DB or Redis cache
+let refreshTokens = [];
+
+app.get("/posts", authenticateToken, (req, res) => {
+  log("Client requested posts by user '" + req.user.name + "'");
+  res.json(posts.filter((post) => post.username === req.user.name));
 });
 
 // Create a new access token given a valid refresh token

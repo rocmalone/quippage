@@ -7,13 +7,20 @@ import styles from "./Home.module.css";
 const Home = () => {
   const [pageState, setPageState] = useState("LANDING");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  const [errorText, setErrorText] = useState("test");
+  const [errorText, setErrorText] = useState("");
 
   const [name, setName] = useState("");
+  const nameMaxCharacters = 12;
+  const [nameRemainingCharacters, setNameRemainingCharacters] =
+    useState(nameMaxCharacters);
   const [uid, setUid] = useState("");
 
   const [roomCode, setRoomCode] = useState("");
+  const roomMaxCharacters = 4;
+  const [roomRemainingCharacters, setRoomRemainingCharacters] =
+    useState(nameMaxCharacters);
+
+  const [isJoinButtonLoading, setIsJoinButtonLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -25,14 +32,12 @@ const Home = () => {
     if (regex.test(newRoomCode)) {
       // Don't let the number enter the input
       e.target.value = roomCode;
-      setErrorText("Room code can only contain letters");
       return;
     }
 
     // Validate no more than 4 characters
     if (newRoomCode.length > 4) {
       e.target.value = roomCode;
-      setErrorText("Room code is 4 characters");
       return;
     }
     setRoomCode(newRoomCode);
@@ -40,13 +45,30 @@ const Home = () => {
 
   const handleNameChange = (e) => {
     const newName = e.target.value;
+    if (newName.length > nameMaxCharacters) {
+      e.target.value = name;
+      return;
+    }
     setName(newName);
+    setNameRemainingCharacters(nameMaxCharacters - newName.length);
   };
 
-  const clickJoinButton = (e) => {};
+  const clickJoinButton = async (e) => {
+    setErrorText("");
+    if (!name) {
+      setErrorText("Error: Enter a nickname or log in to play.");
+    }
+    setIsJoinButtonLoading(true);
+    setTimeout(() => {
+      console.log("finished");
+      setIsJoinButtonLoading(false);
+    }, 3000);
+  };
 
   const clickCreateRoomButton = async (e) => {
-    if (!isLoggedIn()) {
+    setErrorText("");
+    if (!name) {
+      setErrorText("Error: Enter a nickname or log in to create a room.");
     }
   };
 
@@ -59,67 +81,86 @@ const Home = () => {
 
   return (
     <>
-      <div className={styles.loginContainer}>
-        {isLoggedIn ? (
-          <a href="/profile" className="">
-            My Account
-          </a>
-        ) : (
-          <></>
-        )}
-      </div>
       <div className="center">
         <h2>Play Quippage</h2>
-        <div className="form-group">
-          <label htmlFor="inputName">Nickname</label>
+        <div className={`form-group w-75 ${styles.formGroup}`}>
+          {isLoggedIn ? (
+            <>
+              <div className={styles.inputTitleContainer}>
+                Logged in as:<a href="/profile">{name}</a>
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
+          <div className={styles.inputTitleContainer}>
+            <label htmlFor="inputName">Nickname</label>
+            <div>{nameRemainingCharacters}</div>
+          </div>
           <input
             type="text"
-            className="form-control"
+            className="form-control form-control-lg"
             id="inputName"
             onChange={handleNameChange}
+            spellCheck="false"
+            placeholder="Enter your name"
           ></input>
         </div>
-        <div className="form-group">
+
+        <div className={`form-group w-75 ${styles.formGroup}`}>
           <label htmlFor="inputRoomCode">Room Code</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control form-control-lg"
             id="inputRoomCode"
             onChange={handleRoomCodeChange}
+            spellCheck="false"
+            placeholder="Enter 4-letter code"
           ></input>
         </div>
         <button
           type="submit"
           id="joinRoomButton"
-          className="btn btn-primary"
+          className={`btn btn-primary ${styles.joinRoomButton}`}
           onClick={clickJoinButton}
         >
-          Join
+          {isJoinButtonLoading ? (
+            <div class="spinner-border text-light" role="status"></div>
+          ) : (
+            <span>Join Room</span>
+          )}
         </button>
+
+        <div className={styles.hLineContainer}>
+          <div className={styles.hLine}></div>
+          <div className={styles.hLineText}>OR</div>
+          <div className={styles.hLine}></div>
+        </div>
         <button
           type="submit"
           id="createRoomButton"
-          className="btn btn-primary"
+          className={`btn btn-primary ${styles.createRoomButton}`}
           onClick={clickCreateRoomButton}
         >
-          Create Room
+          Create New Room
         </button>
-        <p className="error" style={{ marginTop: "6px" }}>
+        <p className="error" style={{ marginTop: "6px", textAlign: "center" }}>
           {errorText}
         </p>
+
         <div className={styles.loginContainer}>
           {isLoggedIn ? (
-            <a href="/profile" className="">
-              My Account
-            </a>
+            <></>
           ) : (
             <>
-              <div>Want to make your own lists?</div>
+              <div style={{ marginBottom: "4px" }}>
+                Want to create your own trivia lists?
+              </div>
               <a href="/login" className="">
                 Login
               </a>
               <span> or </span>
-              <a href="/login/new">Sign Up</a>
+              <a href="/login/create">Sign Up</a>
             </>
           )}
         </div>
