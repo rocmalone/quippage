@@ -2,14 +2,19 @@ import axios from "axios";
 import styles from "./Login.module.css";
 import { useState } from "react";
 import { apiUrl } from "../App";
+import { useNavigate } from "react-router-dom";
 
 const CreateAccount = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
 
+  const [errorText, setErrorText] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
   const [isSignupButtonLoading, setIsSignupButtonLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const clickSignUp = async (e) => {
     console.log("Signing up..");
@@ -19,7 +24,14 @@ const CreateAccount = () => {
       email: email,
       password: password,
     };
-    const res = axios.post(apiUrl + "/register", req);
+    const res = await axios.post(apiUrl + "/register", req).catch((err) => {
+      console.error(err);
+      setErrorText("Sign up failed, please try again.");
+    });
+    setIsSignupButtonLoading(false);
+
+    // Navigate to login screen
+    navigate("/login");
   };
 
   const clickEyeball = (e) => {

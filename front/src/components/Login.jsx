@@ -37,7 +37,7 @@ const Login = () => {
       username: username,
       password: password,
     };
-    const res = await axios.post(apiUrl + "/api/login", req);
+    const res = await axios.post(apiUrl + "/login", req);
     if (res.status === 200 && res.data.accessToken && res.data.refreshToken) {
       Cookies.set("accessToken", res.data.accessToken);
       Cookies.set("refreshToken", res.data.refreshToken);
@@ -49,7 +49,7 @@ const Login = () => {
   };
 
   const clickSignup = async () => {
-    navigate("/login/new");
+    navigate("/login/create");
   };
 
   return (
@@ -63,6 +63,7 @@ const Login = () => {
             placeholder="Username"
             id="usernameInput"
             autoComplete="off"
+            onChange={handleUsernameChange}
           ></input>
           <label htmlFor="usernameInput">Username or Email</label>
         </div>
@@ -73,6 +74,7 @@ const Login = () => {
             placeholder="Password"
             id="passwordInput"
             autoComplete="off"
+            onChange={handlePasswordChange}
           ></input>
           <label htmlFor="passwordInput">Password</label>
           <div

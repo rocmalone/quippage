@@ -12,6 +12,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Passport middleware
+
 const PORT = readEnvVar("PORT", "3000");
 const ACCESS_TOKEN_SECRET = readEnvVar("ACCESS_TOKEN_SECRET");
 const REFRESH_TOKEN_SECRET = readEnvVar("REFRESH_TOKEN_SECRET");
@@ -56,15 +58,30 @@ const posts = [
 const users = [];
 
 // Create new accessToken & refreshToken
-app.post("/api/login", (req, res) => {
+app.post("/api/login", async (req, res) => {
   // Validate: bad request
+  // req:
+  //      { username, password }
   if (!req.body.username || !req.body.password) return res.sendStatus(400);
-  // Authenticate User
-  // if user auth failed: return res.sendStatus(401)
+  // **Authenticate User's Credentials
+  const user = users.find((u) => u.username === req.body.username);
+  if (!user) {
+    log("Attempt to login as '" + req.body.username + "' failed: username DNE");
+    return res.status(401).send("Username does not exist.");
+  }
+  const hashedPassword = user.password;
 
-  const username = req.body.username;
-  log("Authenticating user '" + username + "'");
-  const user = { name: username };
+  const validLogin = await bcrypt.compare(req.body.password, hashedPassword);
+
+  if (!validLogin) {
+    log(
+      "Attempt to login as '" + req.body.username + "' failed: invalid password"
+    );
+    return res.status(401).send("Invalid password.");
+  }
+
+  log("Authenticating user '" + req.body.username + "'");
+  // const user = { name: username };
 
   const accessToken = generateAccessToken(user);
   const refreshToken = jwt.sign(user, REFRESH_TOKEN_SECRET);
