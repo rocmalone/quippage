@@ -55,6 +55,8 @@ const posts = [
 //
 //
 
+// user contains:
+//    { id, username, email, password }
 const users = [];
 
 // Create new accessToken & refreshToken
@@ -81,34 +83,46 @@ app.post("/api/login", async (req, res) => {
   }
 
   log("Authenticating user '" + req.body.username + "'");
-  // const user = { name: username };
 
   const accessToken = generateAccessToken(user);
   const refreshToken = jwt.sign(user, REFRESH_TOKEN_SECRET);
   // Add refresh token to data store
   refreshTokens.push(refreshToken);
   res.json({ accessToken: accessToken, refreshToken: refreshToken });
-  log("Successfully authenticated '" + username + "'");
+  log("Successfully authenticated '" + req.body.username + "'");
 });
 
 app.post("/api/register", async (req, res) => {
   // req.body:
   // { username, email, password }
   log("Request to create user: ", JSON.stringify(req.body));
+
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     // Store hashedPassword in DB
-    users.push({
+    const user = {
       id: Date.now().toString(),
       username: req.body.username,
       email: req.body.email,
       password: hashedPassword,
-    });
-    res.sendStatus(200);
+    };
+    users.push(user);
+
+    // Log the user in like they just logged in
+    // Basically - create their access tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = jwt.sign(user, REFRESH_TOKEN_SECRET);
+    // Add refresh token to data store
+    refreshTokens.push(refreshToken);
+    res
+      .status(200)
+      .json({ accessToken: accessToken, refreshToken: refreshToken });
+    log("Successfully responded with tokens for '" + req.body.username + "'");
+
+    log(JSON.stringify(users));
   } catch {
     res.sendStatus(500);
   }
-  log(JSON.stringify(users));
 });
 
 //
@@ -124,6 +138,14 @@ let refreshTokens = [];
 app.get("/posts", authenticateToken, (req, res) => {
   log("Client requested posts by user '" + req.user.name + "'");
   res.json(posts.filter((post) => post.username === req.user.name));
+});
+
+// Check if an access token is valid
+app.get("/api/user", authenticateToken, (req, res) => {
+  if (req.user) {
+    return res.status(200).send(req.user);
+  }
+  return res.status(401);
 });
 
 // Create a new access token given a valid refresh token
@@ -172,8 +194,8 @@ function authenticateToken(req, res, next) {
 
 // https://www.youtube.com/watch?v=mbsmsi7l3r4&list=PLZlA0Gpn_vH9yI1hwDVzWqu5sAfajcsBQ&index=3
 function generateAccessToken(user) {
-  log("Generating ACCESS_TOKEN for '" + user.name + "'");
-  return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "20s" });
+  log("Generating ACCESS_TOKEN for '" + user.username + "'");
+  return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "900s" }); // 15 minutes
 }
 
 app.listen(PORT, () => {

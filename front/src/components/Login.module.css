@@ -3,6 +3,11 @@
   flex-direction: column;
 }
 
+.formFloating {
+  display: flex;
+  align-items: center;
+}
+
 .eyeball {
   width: 30px;
   height: 30px;

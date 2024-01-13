@@ -3,6 +3,7 @@ import styles from "./Login.module.css";
 import { useState } from "react";
 import { apiUrl } from "../App";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 const CreateAccount = () => {
   const [username, setUsername] = useState("");
@@ -30,8 +31,17 @@ const CreateAccount = () => {
     });
     setIsSignupButtonLoading(false);
 
+    // Set cookies if successful
+    if (res.status === 200 && res.data.accessToken && res.data.refreshToken) {
+      Cookies.set("accessToken", res.data.accessToken);
+      Cookies.set("refreshToken", res.data.refreshToken);
+      console.log("Set access & refresh token cookies");
+    } else {
+      setErrorText("Error: unable to create user.  Please try again.");
+    }
+
     // Navigate to login screen
-    navigate("/login");
+    navigate("/profile");
   };
 
   const clickEyeball = (e) => {

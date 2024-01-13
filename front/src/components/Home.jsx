@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import Cookies from "js-cookie";
+import { apiUrl } from "../App";
+import { LoggedInUserContext } from "../context";
 
 import styles from "./Home.module.css";
 
 const Home = () => {
-  const [pageState, setPageState] = useState("LANDING");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [errorText, setErrorText] = useState("");
 
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState(""); // Account name
+  const [name, setName] = useState(""); // Nickname
   const nameMaxCharacters = 12;
   const [nameRemainingCharacters, setNameRemainingCharacters] =
     useState(nameMaxCharacters);
@@ -22,7 +24,16 @@ const Home = () => {
 
   const [isJoinButtonLoading, setIsJoinButtonLoading] = useState(false);
 
+  const loggedInUser = useContext(LoggedInUserContext);
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("From Home.jsx: ", loggedInUser);
+    if (loggedInUser) {
+      setUsername(loggedInUser.username);
+    }
+  }, [loggedInUser]);
 
   const handleRoomCodeChange = (e) => {
     const newRoomCode = e.target.value;
@@ -76,18 +87,15 @@ const Home = () => {
     //
   };
 
-  console.log("accessToken:", Cookies.get("accessToken"));
-  console.log("refreshToken:", Cookies.get("refreshToken"));
-
   return (
     <>
       <div className="center">
         <h2>Play Quippage</h2>
         <div className={`form-group w-75 ${styles.formGroup}`}>
-          {isLoggedIn ? (
+          {loggedInUser ? (
             <>
               <div className={styles.inputTitleContainer}>
-                Logged in as:<a href="/profile">{name}</a>
+                Logged in as:<a href="/profile">{username}</a>
               </div>
             </>
           ) : (
@@ -104,6 +112,7 @@ const Home = () => {
             onChange={handleNameChange}
             spellCheck="false"
             placeholder="Enter your name"
+            defaultValue={username}
           ></input>
         </div>
 
@@ -149,7 +158,7 @@ const Home = () => {
         </p>
 
         <div className={styles.loginContainer}>
-          {isLoggedIn ? (
+          {loggedInUser ? (
             <></>
           ) : (
             <>
