@@ -1,37 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import { LoggedInUserContext } from "../context";
+import styles from "./Profile.module.css";
 
 const Profile = () => {
   const [username, setUsername] = useState("default_username");
   const [password, setPassword] = useState("default_pw");
+  const [email, setEmail] = useState("default_email");
+
+  const loggedInUser = useContext(LoggedInUserContext);
 
   useEffect(() => {
-    // If valid tokens exist, log in the user and navigate home
-    const accessToken = Cookies.get("accessToken");
-    const refreshToken = Cookies.get("refreshToken");
-    if (!accessToken && !refreshToken) {
-      // Navigate away from profile
-    } else {
-      getProfileData();
+    if (loggedInUser) {
+      setUsername(loggedInUser.username);
+      setPassword(loggedInUser.password);
+      setEmail(loggedInUser.email);
     }
-  }, []);
-
-  async function getProfileData() {
-    const res = await axios.get("/api/user");
-    if (res.data.username) {
-      setUsername(res.data.username);
-    }
-    if (res.data.password) {
-      setPassword(res.data.password);
-    }
-  }
+  }, [loggedInUser]);
 
   return (
     <>
       <div className="center">
         <h2>Profile</h2>
         <p className="username">{username}</p>
+        <p className={styles.email}>{email}</p>
         <p className="password">{password}</p>
       </div>
     </>
