@@ -87,6 +87,12 @@ const Home = () => {
     //
   };
 
+  const clickLogout = async (e) => {
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
+    loggedInUserContext.refreshUser();
+  };
+
   return (
     <>
       <div className="center">
@@ -95,7 +101,12 @@ const Home = () => {
           {loggedInUser ? (
             <>
               <div className={styles.inputTitleContainer}>
-                Logged in as:<a href="/profile">{username}</a>
+                <div>
+                  Logged in as: <a href="/profile">{username}</a>
+                </div>
+                <a href="" onClick={clickLogout}>
+                  Logout
+                </a>
               </div>
             </>
           ) : (

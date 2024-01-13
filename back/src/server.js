@@ -57,7 +57,7 @@ const posts = [
 
 // user contains:
 //    { id, username, email, password }
-const users = [];
+let users = [];
 
 // Create new accessToken & refreshToken
 app.post("/api/login", async (req, res) => {
@@ -145,7 +145,26 @@ app.put("/api/user", authenticateToken, (req, res) => {
     log("Failed authentication:  PUT /api/user");
     return res.status(401).send("Authentication failed.");
   }
-  log("user email updated to", req.user.email);
+  // TODO: grab this from DB
+  const userIndex = users.findIndex((user) => user.id === req.user.id);
+  const userInDb = users[userIndex];
+  if (userInDb) {
+    log(
+      "Updating user '" +
+        userInDb.username +
+        "': change email from '" +
+        userInDb.email +
+        "' to '" +
+        req.body.email +
+        "'"
+    );
+    users[userIndex] = req.body;
+    console.log("New users array: ", users);
+    // Generate access token and refresh token
+  } else {
+    warn("Tried to update user but couldn't user '" + req.body.username + "'");
+    res.status(404).send("Could not find user.");
+  }
 });
 
 // Check if an access token is valid

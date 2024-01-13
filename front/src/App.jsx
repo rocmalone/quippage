@@ -21,11 +21,16 @@ export async function tryToLogin() {
 
   if (accessToken) {
     try {
-      const res = await axios.get(apiUrl + "/user");
+      const res = await axios.get(apiUrl + "/user").catch((e) => {
+        if (e.response.data.name === "TokenExpiredError") {
+          console.log(
+            "Access token is expired. TODO: Try to use refreshToken to renew."
+          );
+        }
+      });
       console.log("Logged in as: ", res.data);
       return res.data;
     } catch {
-      console.log("Failed to log in user");
       return false;
     }
   }
@@ -33,7 +38,6 @@ export async function tryToLogin() {
 }
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState(false);
 
   useEffect(() => {
@@ -41,8 +45,19 @@ const App = () => {
   }, []);
 
   // Try to change the user in the backend, then re-login
-  async function setUser() {
+  // newUser:  { username, email, password }
+  async function setUser(newUser) {
     console.log("Trying to change the user at the backend ...");
+    const res = await axios.put(apiUrl + "/user", {
+      username: newUser.username,
+      email: newUser.email,
+      password: newUser.password,
+    });
+    setLoggedInUser(newUser);
+    // Send request with new user information
+    // Recieve response with new user access token and refresh token
+    // Update cookies
+    // refreshUser()
   }
 
   async function refreshUser() {

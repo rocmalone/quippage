@@ -1,7 +1,8 @@
-import { ChangeEvent, useState, useContext } from "react";
+import { ChangeEvent, useState, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
 import { apiUrl } from "../App";
+import { LoggedInUserContext } from "../context";
 
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -11,6 +12,10 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [errorText, setErrorText] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const passwordRef = useRef();
+
+  const loggedInUserContext = useContext(LoggedInUserContext);
 
   const navigate = useNavigate();
 
@@ -37,14 +42,21 @@ const Login = () => {
       username: username,
       password: password,
     };
-    const res = await axios.post(apiUrl + "/login", req);
-    if (res.status === 200 && res.data.accessToken && res.data.refreshToken) {
-      Cookies.set("accessToken", res.data.accessToken);
-      Cookies.set("refreshToken", res.data.refreshToken);
-      navigate("/");
-    } else if (res.status === 401) {
-      setErrorText("Invalid username or password.");
-      return;
+    try {
+      const res = await axios.post(apiUrl + "/login", req);
+      if (res.status === 200 && res.data.accessToken && res.data.refreshToken) {
+        Cookies.set("accessToken", res.data.accessToken);
+        Cookies.set("refreshToken", res.data.refreshToken);
+        loggedInUserContext.refreshUser();
+        navigate("/");
+      }
+    } catch (e) {
+      if (e.response.status === 401) {
+        setErrorText("Invalid username or password.");
+        setPassword("");
+        if (passwordRef) passwordRef.current.value = "";
+        return;
+      }
     }
   };
 
@@ -75,6 +87,7 @@ const Login = () => {
             id="passwordInput"
             autoComplete="off"
             onChange={handlePasswordChange}
+            ref={passwordRef}
           ></input>
           <label htmlFor="passwordInput">Password</label>
           <div
@@ -86,6 +99,7 @@ const Login = () => {
             👁️
           </div>
         </div>
+        <div className="errorText">{errorText}</div>
         <button
           type="button"
           className={`btn btn-primary w-75 ${styles.loginButton}`}

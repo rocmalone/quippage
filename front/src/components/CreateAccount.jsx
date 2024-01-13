@@ -46,7 +46,7 @@ const CreateAccount = () => {
 
     loggedInUserContext.refreshUser();
     // Navigate to home screen
-    navigate("/home");
+    navigate("/");
   };
 
   const clickEyeball = (e) => {

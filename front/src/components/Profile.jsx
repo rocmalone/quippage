@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { LoggedInUserContext } from "../context";
@@ -13,6 +13,8 @@ const Profile = () => {
   const [newEmail, setNewEmail] = useState("");
 
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
+
+  const emailRef = useRef();
 
   const loggedInUserContext = useContext(LoggedInUserContext);
   const loggedInUser = loggedInUserContext.user;
@@ -29,14 +31,18 @@ const Profile = () => {
 
   const clickUpdateEmail = async (e) => {
     e.preventDefault();
-    // Toggle state
-    setIsUpdatingEmail((isUpdatingEmail) => !isUpdatingEmail);
     // If hitting 'save'
     if (isUpdatingEmail === true) {
-      const newUser = { ...loggedInUser, email: newEmail };
-      const res = await axios.put(apiUrl + "/user", newUser);
-      loggedInUserContext.setUser(newUser);
+      // Only save if the email passes validation
+      // TODO: Instead of checking newEmail, use a function that validates email and returns t/f
+      if (newEmail) {
+        const newUser = { ...loggedInUser, email: newEmail };
+        loggedInUserContext.setUser(newUser);
+      }
+
+      return setIsUpdatingEmail(false);
     }
+    return setIsUpdatingEmail(true);
   };
 
   const handleEmailChange = (e) => {
@@ -57,13 +63,29 @@ const Profile = () => {
         <h2>Profile</h2>
         <p className="username">{username}</p>
         <div>
-          <input
-            type="text"
-            className={styles.email}
-            defaultValue={email}
-            disabled={!isUpdatingEmail}
-            onChange={handleEmailChange}
-          ></input>
+          {isUpdatingEmail ? (
+            <>
+              {" "}
+              <input
+                type="text"
+                className={styles.email}
+                ref={emailRef}
+                defaultValue={email}
+                disabled={false}
+                onChange={handleEmailChange}
+              ></input>
+            </>
+          ) : (
+            <input
+              type="text"
+              className={styles.email}
+              ref={emailRef}
+              value={email}
+              disabled={true}
+              onChange={handleEmailChange}
+            ></input>
+          )}
+
           <button
             className="btn btn-primary btn-sm"
             type="button"
