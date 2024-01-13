@@ -24,12 +24,12 @@ const Home = () => {
 
   const [isJoinButtonLoading, setIsJoinButtonLoading] = useState(false);
 
-  const loggedInUser = useContext(LoggedInUserContext);
+  const loggedInUserContext = useContext(LoggedInUserContext);
+  const loggedInUser = loggedInUserContext.user;
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("From Home.jsx: ", loggedInUser);
     if (loggedInUser) {
       setUsername(loggedInUser.username);
     }

@@ -1,3 +1,6 @@
 import { createContext } from "react";
 
-export const LoggedInUserContext = createContext(false);
+export const LoggedInUserContext = createContext({
+  user: false,
+  setUser: () => {},
+});

@@ -13,34 +13,46 @@ import { LoggedInUserContext } from "./context";
 
 export const apiUrl = "http://localhost:3000/api";
 
+export async function tryToLogin() {
+  // If valid tokens exist, log in the user and navigate home
+  const accessToken = Cookies.get("accessToken");
+  const refreshToken = Cookies.get("refreshToken");
+  axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+  if (accessToken) {
+    try {
+      const res = await axios.get(apiUrl + "/user");
+      console.log("Logged in as: ", res.data);
+      return res.data;
+    } catch {
+      console.log("Failed to log in user");
+      return false;
+    }
+  }
+  return false;
+}
+
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState(false);
 
   useEffect(() => {
-    checkIfLoggedIn();
+    refreshUser();
   }, []);
 
-  async function checkIfLoggedIn() {
-    // If valid tokens exist, log in the user and navigate home
-    const accessToken = Cookies.get("accessToken");
-    const refreshToken = Cookies.get("refreshToken");
-    console.log(accessToken);
-    if (!accessToken && !refreshToken) {
+  // Try to change the user in the backend, then re-login
+  async function setUser() {
+    console.log("Trying to change the user at the backend ...");
+  }
+
+  async function refreshUser() {
+    console.log("App.js:  Refreshing user");
+    try {
+      const user = await tryToLogin();
+      setLoggedInUser(user);
+    } catch (e) {
+      console.error(e);
       setLoggedInUser(false);
-    }
-    if (!isLoggedIn && accessToken) {
-      try {
-        const res = await axios.get(apiUrl + "/user", {
-          headers: {
-            Authorization: "Bearer " + accessToken,
-          },
-        });
-        console.log(res);
-        setLoggedInUser(res.data);
-      } catch {
-        setIsLoggedIn(false);
-      }
     }
   }
 
@@ -52,7 +64,13 @@ const App = () => {
         </a>
       </div>
       <div className="main">
-        <LoggedInUserContext.Provider value={loggedInUser}>
+        <LoggedInUserContext.Provider
+          value={{
+            user: loggedInUser,
+            setUser: setUser,
+            refreshUser: refreshUser,
+          }}
+        >
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Home />} />

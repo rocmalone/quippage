@@ -140,6 +140,14 @@ app.get("/posts", authenticateToken, (req, res) => {
   res.json(posts.filter((post) => post.username === req.user.name));
 });
 
+app.put("/api/user", authenticateToken, (req, res) => {
+  if (!req.user) {
+    log("Failed authentication:  PUT /api/user");
+    return res.status(401).send("Authentication failed.");
+  }
+  log("user email updated to", req.user.email);
+});
+
 // Check if an access token is valid
 app.get("/api/user", authenticateToken, (req, res) => {
   if (req.user) {
@@ -195,7 +203,7 @@ function authenticateToken(req, res, next) {
 // https://www.youtube.com/watch?v=mbsmsi7l3r4&list=PLZlA0Gpn_vH9yI1hwDVzWqu5sAfajcsBQ&index=3
 function generateAccessToken(user) {
   log("Generating ACCESS_TOKEN for '" + user.username + "'");
-  return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "900s" }); // 15 minutes
+  return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "900s" }); // 900s = 15 minutes
 }
 
 app.listen(PORT, () => {

@@ -1,9 +1,10 @@
 import axios from "axios";
 import styles from "./Login.module.css";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { apiUrl } from "../App";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import { LoggedInUserContext } from "../context";
 
 const CreateAccount = () => {
   const [username, setUsername] = useState("");
@@ -17,6 +18,8 @@ const CreateAccount = () => {
 
   const navigate = useNavigate();
 
+  const loggedInUserContext = useContext(LoggedInUserContext);
+
   const clickSignUp = async (e) => {
     console.log("Signing up..");
     setIsSignupButtonLoading(true);
@@ -25,6 +28,7 @@ const CreateAccount = () => {
       email: email,
       password: password,
     };
+
     const res = await axios.post(apiUrl + "/register", req).catch((err) => {
       console.error(err);
       setErrorText("Sign up failed, please try again.");
@@ -40,8 +44,9 @@ const CreateAccount = () => {
       setErrorText("Error: unable to create user.  Please try again.");
     }
 
-    // Navigate to login screen
-    navigate("/profile");
+    loggedInUserContext.refreshUser();
+    // Navigate to home screen
+    navigate("/home");
   };
 
   const clickEyeball = (e) => {
@@ -124,6 +129,7 @@ const CreateAccount = () => {
             <span>Sign Up</span>
           )}
         </button>
+        <p>{errorText}</p>
       </div>
     </>
   );
