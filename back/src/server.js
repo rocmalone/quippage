@@ -5,6 +5,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { log, warn, error, readEnvVar } = require("./helpers.js");
+const db = require("./db.js");
 
 dotenv.config();
 
@@ -20,22 +21,7 @@ const REFRESH_TOKEN_SECRET = readEnvVar("REFRESH_TOKEN_SECRET");
 const DB_URI = readEnvVar("DB_URI");
 
 const client = new MongoClient(DB_URI);
-
-async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
-  }
-}
-run().catch(console.dir);
+db.config(client);
 
 const posts = [
   {
@@ -66,7 +52,9 @@ app.post("/api/login", async (req, res) => {
   //      { username, password }
   if (!req.body.username || !req.body.password) return res.sendStatus(400);
   // **Authenticate User's Credentials
-  const user = users.find((u) => u.username === req.body.username);
+  // const user = users.find((u) => u.username === req.body.username);
+  const user = await db.getUserByUsername(req.body.username);
+  console.log("Found user in db:", user);
   if (!user) {
     log("Attempt to login as '" + req.body.username + "' failed: username DNE");
     return res.status(401).send("Username does not exist.");
@@ -168,9 +156,19 @@ app.put("/api/user", authenticateToken, (req, res) => {
 });
 
 // Check if an access token is valid
-app.get("/api/user", authenticateToken, (req, res) => {
+app.get("/api/user", authenticateToken, async (req, res) => {
   if (req.user) {
-    return res.status(200).send(req.user);
+    try {
+      const userAllInfo = await db.getUserById(req.user._id);
+      const userLimited = {
+        _id: userAllInfo._id,
+        username: userAllInfo.username,
+        email: userAllInfo.email,
+      };
+      res.status(200).send(userLimited);
+    } catch (e) {
+      return res.sendStatus(500);
+    }
   }
   return res.status(401);
 });
@@ -222,9 +220,23 @@ function authenticateToken(req, res, next) {
 // https://www.youtube.com/watch?v=mbsmsi7l3r4&list=PLZlA0Gpn_vH9yI1hwDVzWqu5sAfajcsBQ&index=3
 function generateAccessToken(user) {
   log("Generating ACCESS_TOKEN for '" + user.username + "'");
-  return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "900s" }); // 900s = 15 minutes
+  // Strip the user of extraneous fields which exist in the db but not in the token
+  function cleanUserForToken(user) {
+    // User token should include fields which we don't want to make a db call for:
+    // { username, _id }
+    const cleanUser = {
+      username: user.username,
+      _id: user._id,
+    };
+    console.log("parsed user:", cleanUser);
+    return cleanUser;
+  }
+  const cleanUser = cleanUserForToken(user);
+  return jwt.sign(cleanUser, ACCESS_TOKEN_SECRET, {
+    expiresIn: "900s",
+  }); // 900s = 15 minutes
 }
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  log(`Server is running on port ${PORT}`);
 });

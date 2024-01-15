@@ -8,6 +8,11 @@ exports.log = function (...args) {
   console.log("[LOG]", message);
 };
 
+exports.dblog = function (...args) {
+  const message = args.join(" ");
+  console.log("[DBLOG]", message);
+};
+
 exports.error = function (...args) {
   const message = args.join(" ");
   console.error("[ERROR]", message);

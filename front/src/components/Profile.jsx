@@ -7,9 +7,9 @@ import { apiUrl } from "../App";
 import axios from "axios";
 
 const Profile = () => {
-  const [username, setUsername] = useState("default_username");
-  const [password, setPassword] = useState("default_pw");
-  const [email, setEmail] = useState("default_email");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
 
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
@@ -23,9 +23,12 @@ const Profile = () => {
 
   useEffect(() => {
     if (loggedInUser) {
+      if (!email) {
+        axios.get(apiUrl + "/user/email");
+      }
       setUsername(loggedInUser.username);
-      setPassword(loggedInUser.password);
-      setEmail(loggedInUser.email);
+      console.log("Logged in user has _id: ", loggedInUser._id);
+      // Get email from database
     }
   }, [loggedInUser]);
 
