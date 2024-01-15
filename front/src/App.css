@@ -11,6 +11,10 @@
   font-size: 12pt;
 }
 
+.main {
+  background-color: red;
+}
+
 .form-floating {
   margin-bottom: 5px;
   width: 100%;
